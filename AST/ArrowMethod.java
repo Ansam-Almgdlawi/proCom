@@ -13,6 +13,9 @@ public class ArrowMethod implements ASTNode {
 
     public ArrowMethod() {}
 
+    public ArrowMethod(Modifier modifier, String name, ParameterList parameters, String returnType) {
+    }
+
     public void addParameter(String param) {
         if (param != null) {
             parameters.add(param);
