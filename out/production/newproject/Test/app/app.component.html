@@ -1,18 +1,4 @@
 <div class="app-container">
-  <div class="product-list">
-    <h2>Product List</h2>
-    <ul>
-      <li *ngFor="let product of products" (click)="onProductSelected(product)">
-        <img [src]="product.image" alt="{{ product.name }}">
-        <span>{{ product.name }}</span>
-      </li>
-    </ul>
-  </div>
-
-  <div class="product-detail" *ngIf="selectedProduct">
-    <h2>{{ selectedProduct.name }}</h2>
-    <img [src]="selectedProduct.image" alt="{{ selectedProduct.name }}">
-    <p>{{ selectedProduct.description }}</p>
-
-  </div>
+  <app-product-list (selectedProduct)="onProductSelected($event)"></app-product-list>
+  <app-product-detail [product]="selectedProduct"></app-product-detail>
 </div>

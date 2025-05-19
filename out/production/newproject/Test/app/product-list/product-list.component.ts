@@ -1,20 +1,25 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import { Product } from '../product.model'; // تأكد من استيراد الـ Product
-import { CommonModule } from '@angular/common';  // تأكد من استيراد CommonModule
+<script>
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Product } from '../product.model';
+import { ProductService } from '../product.service';
 
 @Component({
   selector: 'app-product-list',
-  standalone: true, // اجعل المكون مستقلاً
   templateUrl: './product-list.component.html',
-  styleUrls: ['./product-list.component.css'],
-  imports: [CommonModule]  // تأكد من إضافة CommonModule هنا
+  styleUrls: ['./product-list.component.css']
 })
-export class ProductListComponent {
+export class ProductListComponent implements OnInit {
+  products: Product[] = [];
   @Output() selectedProduct = new EventEmitter<Product>();
 
-  products: Product[] = []; // قائمة المنتجات (يمكنك ملؤها ببيانات ثابتة أو من الخدمة)
+  constructor(private productService: ProductService) {}
+
+  ngOnInit(): void {
+    this.products = this.productService.getProducts();
+  }
 
   selectProduct(product: Product): void {
-    this.selectedProduct.emit(product); // إرسال المنتج المحدد إلى المكون الأب
+    this.selectedProduct.emit(product); // تأكد من إرسال كائن من نوع Product
   }
 }
+</script>

@@ -1,3 +1,4 @@
+<script>
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProductDetailComponent } from './product-detail.component';
@@ -21,3 +22,4 @@ describe('ProductDetailComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+</script>

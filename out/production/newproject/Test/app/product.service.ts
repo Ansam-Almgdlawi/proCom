@@ -1,15 +1,19 @@
+<script>
 import { Injectable } from '@angular/core';
 import { Product } from './product.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProductService {
+  private products: Product[] = [
+    { id: 1, name: 'Product 1', image: 'assets/product1.jpg', description: 'Details of Product 1' },
+    { id: 2, name: 'Product 2', image: 'assets/product2.jpg', description: 'Details of Product 2' },
+    { id: 3, name: 'Product 3', image: 'assets/product3.jpg', description: 'Details of Product 3' },
+  ];
+
   getProducts(): Product[] {
-    return [
-      { id: 1, name: 'Product 1', image: 'https://via.placeholder.com/150', description: 'Description for product 1' },
-      { id: 2, name: 'Product 2', image: 'https://via.placeholder.com/150', description: 'Description for product 2' },
-      { id: 3, name: 'Product 3', image: 'https://via.placeholder.com/150', description: 'Description for product 3' },
-    ];
+    return this.products;
   }
 }
+</script>

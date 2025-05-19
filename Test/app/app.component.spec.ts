@@ -1,3 +1,4 @@
+<script>
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 
@@ -14,7 +15,7 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have the 'productApp' title`, () => {
+  it('should have the 'productApp' title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     expect(app.title).toEqual('productApp');
@@ -27,3 +28,4 @@ describe('AppComponent', () => {
     expect(compiled.querySelector('h1')?.textContent).toContain('Hello, productApp');
   });
 });
+</script>

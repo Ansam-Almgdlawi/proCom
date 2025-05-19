@@ -1,25 +1,17 @@
-import { Component, OnInit } from '@angular/core';
-import { Product } from './product.model';
-import { ProductService } from './product.service';
-import { CommonModule } from '@angular/common'; // إضافة CommonModule هنا
+<script>
+import { Component } from '@angular/core';
+import { Product } from './product.model'; // تأكد من أنك قد استوردت نموذج الـ Product
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
-  imports: [CommonModule] // تأكد من إضافة CommonModule هنا
+  styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
-  products: Product[] = [];
-  selectedProduct?: Product;
-
-  constructor(private productService: ProductService) {}
-
-  ngOnInit(): void {
-    this.products = this.productService.getProducts();
-  }
+export class AppComponent {
+  selectedProduct?: Product; // تعريف المتغير
 
   onProductSelected(product: Product): void {
-    this.selectedProduct = product;
+    this.selectedProduct = product; // التأكد من أن المنتج هو من نوع Product
   }
 }
+</script>

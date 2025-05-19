@@ -2,13 +2,16 @@ package visitor;
 
 import AST.*;
 import AST.Expressions.Expression;
-import antlr.ParserBaseVisitor;
-import antlr.Parser;
+//import gen.src.antlr.AngularParserBaseVisitor;
+import src.antlr.AngularParser;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import src.antlr.AngularParserBaseVisitor;
+//import src.src.antlr.AngularParserBaseVisitor;
+//import src.antlr.AngularParserBaseVisitor;
 
-public class BaseVisitor extends ParserBaseVisitor {
-    public Program visitProgram(Parser.ProgramContext ctx) {
+public class BaseVisitor extends AngularParserBaseVisitor {
+    public Program visitProgram(AngularParser.ProgramContext ctx) {
 
         Program program = new Program();
        // if(ctx.getChild(0) instanceof Parser.HtmlDocumentContext ){
@@ -20,7 +23,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         }
         return program;
     }
-    public ASTNode visitImportStatement(Parser.ImportStatementContext ctx) {
+    public ASTNode visitImportStatement(AngularParser.ImportStatementContext ctx) {
         ImportStatement importStatement = new ImportStatement();
 
         // Set the source module
@@ -46,7 +49,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         return importStatement;
     }
 
-    public ASTNode visitImportSpecifier(Parser.ImportSpecifierContext ctx) {
+    public ASTNode visitImportSpecifier(AngularParser.ImportSpecifierContext ctx) {
         ImportSpecifier importSpecifier = new ImportSpecifier();
 
         for (int i = 0; i < ctx.IDENTIFIER().size(); i++) {
@@ -66,19 +69,19 @@ public class BaseVisitor extends ParserBaseVisitor {
     }
 
 
-    public ASTNode visitComponentDeclaration(Parser.ComponentDeclarationContext ctx) {
+    public ASTNode visitComponentDeclaration(AngularParser.ComponentDeclarationContext ctx) {
         ComponentDeclaration component = new ComponentDeclaration();
 
         for (int i = 0; i < ctx.getChildCount(); i++) {
             ParseTree child = ctx.getChild(i);
 
-            if (child instanceof Parser.SelectorContext) {
+            if (child instanceof AngularParser.SelectorContext) {
                 component.setSelector((Selector) visit(child));
-            } else if (child instanceof Parser.StandaloneContext) {
+            } else if (child instanceof AngularParser.StandaloneContext) {
                 component.setStandalone((Standalone) visit(child));
-            } else if (child instanceof Parser.ImportsContext) {
+            } else if (child instanceof AngularParser.ImportsContext) {
                 component.setImports((Imports) visit(child));
-            } else if (child instanceof Parser.UrlContext) {
+            } else if (child instanceof AngularParser.UrlContext) {
                 if (child.getText().startsWith("templateUrl")) {
                     component.setTemplateUrl((Url) visit(child));
                 } else if (child.getText().startsWith("styleUrl")) {
@@ -93,17 +96,17 @@ public class BaseVisitor extends ParserBaseVisitor {
 
 
 
-    public ASTNode visitSelector(Parser.SelectorContext ctx) {
+    public ASTNode visitSelector(AngularParser.SelectorContext ctx) {
         return new Selector(ctx.String().getText().replace("\"", ""));
     }
 
 
-    public ASTNode visitStandalone(Parser.StandaloneContext ctx) {
+    public ASTNode visitStandalone(AngularParser.StandaloneContext ctx) {
         return new Standalone(Boolean.parseBoolean(ctx.Boolean().getText()));
     }
 
 
-    public ASTNode visitImports(Parser.ImportsContext ctx) {
+    public ASTNode visitImports(AngularParser.ImportsContext ctx) {
         Imports imports= new Imports();
 
         for (TerminalNode identifier : ctx.IDENTIFIER()) {
@@ -113,10 +116,10 @@ public class BaseVisitor extends ParserBaseVisitor {
     }
 
 
-    public ASTNode visitUrl(Parser.UrlContext ctx) {
+    public ASTNode visitUrl(AngularParser.UrlContext ctx) {
         return new Url(ctx.String().getText().replace("\"", ""));
     }
-    public ASTNode visitFunctionDeclaration(Parser.FunctionDeclarationContext ctx) {
+    public ASTNode visitFunctionDeclaration(AngularParser.FunctionDeclarationContext ctx) {
         String name = null;
 
         String returnType = null;
@@ -146,7 +149,7 @@ public class BaseVisitor extends ParserBaseVisitor {
 
         return functionDeclaration;
     }
-    public ASTNode visitBlock(Parser.BlockContext ctx) {
+    public ASTNode visitBlock(AngularParser.BlockContext ctx) {
         Block block = new Block();
 
         // Iterate through each child in the block context
@@ -162,13 +165,13 @@ public class BaseVisitor extends ParserBaseVisitor {
 
         return block;
     }
-    public ASTNode visitParameterList(Parser.ParameterListContext ctx) {
+    public ASTNode visitParameterList(AngularParser.ParameterListContext ctx) {
         // Create a new ParameterList instance
         ParameterList parameterList = new ParameterList();
 
         // Visit each parameter and add to the parameter list
         if (ctx.parameter() != null) {
-            for (Parser.ParameterContext paramCtx : ctx.parameter()) {
+            for (AngularParser.ParameterContext paramCtx : ctx.parameter()) {
                 Parameter parameter = (Parameter) visit(paramCtx); // Visit each parameter
                 parameterList.addParameter(parameter); // Add to the list
             }
@@ -176,12 +179,12 @@ public class BaseVisitor extends ParserBaseVisitor {
 
         return parameterList;
     }
-    public ASTNode visitParameter(Parser.ParameterContext ctx) {
+    public ASTNode visitParameter(AngularParser.ParameterContext ctx) {
         // Create a Parameter with the name from the context
         String paramName = ctx.IDENTIFIER(0).getText();
         return new Parameter(paramName);
     }
-    public ASTNode visitMethodDeclaration(Parser.MethodDeclarationContext ctx) {
+    public ASTNode visitMethodDeclaration(AngularParser.MethodDeclarationContext ctx) {
 
 
         if (ctx.arrowMethod() != null) {
@@ -200,7 +203,7 @@ public class BaseVisitor extends ParserBaseVisitor {
 
         return new MethodDeclaration(name, modifier, parameterList, returnType, block);
     }
-    public ASTNode visitArrowMethod(Parser.ArrowMethodContext ctx) {
+    public ASTNode visitArrowMethod(AngularParser.ArrowMethodContext ctx) {
         // Extract the optional modifier (e.g., PUBLIC, PRIVATE)
         Modifier modifier = ctx.modifier() != null ?(Modifier) visit( ctx.modifier()) : null;
 
@@ -218,14 +221,14 @@ public class BaseVisitor extends ParserBaseVisitor {
 
         // Extract the statements inside the method block
         if (ctx.statement() != null) {
-            for (Parser.StatementContext statementCtx : ctx.statement()) {
+            for (AngularParser.StatementContext statementCtx : ctx.statement()) {
                 Statement statement = (Statement) visit(statementCtx);
                 arrowMethod.addBodyElement(statement);
             }
         }
         return arrowMethod;
     }
-    public ASTNode visitModifier(Parser.ModifierContext ctx) {
+    public ASTNode visitModifier(AngularParser.ModifierContext ctx) {
         if (ctx.PUBLIC() != null) {
             return new Modifier("PUBLIC");
         } else if (ctx.PRIVATE() != null) {
@@ -247,7 +250,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         }
         return null;
     }
-    public ASTNode visitClassDeclaration(Parser.ClassDeclarationContext ctx) {
+    public ASTNode visitClassDeclaration(AngularParser.ClassDeclarationContext ctx) {
         ASTNode modifier = ctx.modifier() != null ? (ASTNode) visit( ctx.modifier()) : null;
         String name = ctx.IDENTIFIER(0).getText();
         String parentOrInterface = null;
@@ -259,7 +262,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         ClassDeclaration classDeclaration = new ClassDeclaration(modifier, name, parentOrInterface);
 
         if (ctx.classMember() != null) {
-            for (Parser.ClassMemberContext memberCtx : ctx.classMember()) {
+            for (AngularParser.ClassMemberContext memberCtx : ctx.classMember()) {
                 classDeclaration.addMember((ClassMember) visit(memberCtx));
             }
         }
@@ -267,7 +270,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         return classDeclaration;
     }
 
-    public ASTNode visitClassMember(Parser.ClassMemberContext ctx) {
+    public ASTNode visitClassMember(AngularParser.ClassMemberContext ctx) {
         if (ctx.inputDeclaration() != null) {
             return new ClassMember((ASTNode)visit(ctx.inputDeclaration()));
         } else if (ctx.outputDeclaration() != null) {
@@ -287,7 +290,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         }
         return null;
     }
-    public ASTNode visitNgOn(Parser.NgOnContext ctx) {
+    public ASTNode visitNgOn(AngularParser.NgOnContext ctx) {
         // Determine the type (NGONINIT or NGONCHANGES)
         String type = ctx.NGONINIT() != null ? ctx.NGONINIT().getText() : ctx.NGONCHANGES().getText();
 
@@ -309,13 +312,13 @@ public class BaseVisitor extends ParserBaseVisitor {
     }
 
 
-    public ASTNode visitReturnStatement(Parser.ReturnStatementContext ctx) {
+    public ASTNode visitReturnStatement(AngularParser.ReturnStatementContext ctx) {
         ASTNode expression = null;
         return new ReturnStatement(expression);
     }
 
 
-    public ASTNode visitCallingMethod(Parser.CallingMethodContext ctx) {
+    public ASTNode visitCallingMethod(AngularParser.CallingMethodContext ctx) {
         // Extract method name (IDENTIFIER or CATCH)
         String methodName = ctx.IDENTIFIER(0) != null ? ctx.IDENTIFIER(0).getText() : ctx.CATCH().getText();
 
@@ -348,7 +351,7 @@ public class BaseVisitor extends ParserBaseVisitor {
 
 
 
-    public ASTNode visitDataStructure(Parser.DataStructureContext ctx) {
+    public ASTNode visitDataStructure(AngularParser.DataStructureContext ctx) {
         if (ctx.list() != null) {
             return new DataStructure((ASTNode) visit(ctx.list()));
         }
@@ -358,7 +361,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         return null; // Shouldn't occur if the grammar is correctly enforced
     }
 
-    public ASTNode visitItemsStructures(Parser.ItemsStructuresContext ctx) {
+    public ASTNode visitItemsStructures(AngularParser.ItemsStructuresContext ctx) {
         if (ctx.literal() != null) {
             return new ItemsStructures((ASTNode) visit(ctx.literal()));
         }
@@ -378,7 +381,7 @@ public class BaseVisitor extends ParserBaseVisitor {
     }
 
 
-    public ASTNode visitMap(Parser.MapContext ctx) {
+    public ASTNode visitMap(AngularParser.MapContext ctx) {
         MapStructure map = new MapStructure();
 
         if (ctx.itemsStructures().size() % 2 == 0) {
@@ -392,11 +395,11 @@ public class BaseVisitor extends ParserBaseVisitor {
         return map;
     }
 
-    public ASTNode visitList(Parser.ListContext ctx) {
+    public ASTNode visitList(AngularParser.ListContext ctx) {
         ListStructure list = new ListStructure();
 
         if (ctx.itemsStructures() != null) {
-            for (Parser.ItemsStructuresContext itemCtx : ctx.itemsStructures()) {
+            for (AngularParser.ItemsStructuresContext itemCtx : ctx.itemsStructures()) {
                 list.addItem((ItemsStructures) visit(itemCtx));
             }
         }
@@ -404,7 +407,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         return list;
     }
 
-    public ASTNode visitOperator(Parser.OperatorContext ctx) {
+    public ASTNode visitOperator(AngularParser.OperatorContext ctx) {
         if (ctx.EQUAL() != null) return new Operator("=");
         if (ctx.getChild(0) != ctx.PLUS()&&ctx.getChild(1) == ctx.EQUAL()) return new Operator("+=");
         if (ctx.getChild(0) != ctx.MINUS()&&ctx.getChild(1) == ctx.EQUAL()) return new Operator("-=");
@@ -416,7 +419,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         return null;
     }
 
-    public ASTNode visitCompersion(Parser.CompersionContext ctx) {
+    public ASTNode visitCompersion(AngularParser.CompersionContext ctx) {
         if (ctx.GREATER_THAN() != null) return new Comparison(">");
         if (ctx.LESS_THAN() != null) return new Comparison("<");
         if (ctx.GREATER_THAN_OR_EQUAL() != null) return new Comparison(">=");
@@ -430,7 +433,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         return null;
     }
 
-    public ASTNode visitIfStatement(Parser.IfStatementContext ctx) {
+    public ASTNode visitIfStatement(AngularParser.IfStatementContext ctx) {
         if (ctx.shortIf() != null) {
             // Handle arrow method
             return (ASTNode) visit(ctx.shortIf());
@@ -447,7 +450,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         IfStatement ifStatement = new IfStatement(condition, block);
 
         // Visit any else-if statements and add them
-        for (Parser.ElseIfStatmentContext elseIfCtx : ctx.elseIfStatment()) {
+        for (AngularParser.ElseIfStatmentContext elseIfCtx : ctx.elseIfStatment()) {
             ElseIfStatement elseIfStatement = (ElseIfStatement) visit(elseIfCtx);
             ifStatement.addElseIfStatement(elseIfStatement);
         }
@@ -462,7 +465,7 @@ public class BaseVisitor extends ParserBaseVisitor {
     }
 
 
-    public ASTNode visitElseIfStatment(Parser.ElseIfStatmentContext ctx) {
+    public ASTNode visitElseIfStatment(AngularParser.ElseIfStatmentContext ctx) {
         // Visit the expression and block inside the elseif statement
         ASTNode condition = (ASTNode) visit(ctx.expression());
         Block block = (Block) visit(ctx.block());
@@ -472,14 +475,14 @@ public class BaseVisitor extends ParserBaseVisitor {
     }
 
 
-    public ASTNode visitElseStatment(Parser.ElseStatmentContext ctx) {
+    public ASTNode visitElseStatment(AngularParser.ElseStatmentContext ctx) {
         Block block = (Block) visit(ctx.block());
 
         // Return a new ElseStatement with the block
         return new ElseStatement(block);
     }
 
-    public ASTNode visitShortIf(Parser.ShortIfContext ctx) {
+    public ASTNode visitShortIf(AngularParser.ShortIfContext ctx) {
         // Visit the expression and statement parts of the short if
         ASTNode expression = (ASTNode) visit(ctx.expression());
         Statement statement = (Statement) visit(ctx.statement());
@@ -488,7 +491,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         ShortIf shortIf = new ShortIf(expression, statement);
 
         // Visit any short else if blocks
-        for (Parser.ShortElseIfContext shortElseIfCtx : ctx.shortElseIf()) {
+        for (AngularParser.ShortElseIfContext shortElseIfCtx : ctx.shortElseIf()) {
             ShortElseIf shortElseIf = (ShortElseIf) visit(shortElseIfCtx);
             shortIf.addShortElseIf(shortElseIf);
         }
@@ -501,14 +504,14 @@ public class BaseVisitor extends ParserBaseVisitor {
     }
 
 
-    public ASTNode visitShortElseIf(Parser.ShortElseIfContext ctx) {
+    public ASTNode visitShortElseIf(AngularParser.ShortElseIfContext ctx) {
         // Visit the expression and statement parts of short else if
         Expression expression = (Expression) visit(ctx.expression());
         Statement statement = (Statement) visit(ctx.statement());
         return new ShortElseIf(expression, statement);
     }
 
-    public ASTNode visitShortelse(Parser.ShortelseContext ctx) {
+    public ASTNode visitShortelse(AngularParser.ShortelseContext ctx) {
 
         // Visit the statement inside the short else and return it
         Statement statement = (Statement) visit(ctx.statement());
@@ -517,7 +520,7 @@ public class BaseVisitor extends ParserBaseVisitor {
 
     }
 
-    public ASTNode visitArrowIf(Parser.ArrowIfContext ctx) {
+    public ASTNode visitArrowIf(AngularParser.ArrowIfContext ctx) {
         // Visit the expression before the ARROW (condition)
         Expression condition = (Expression) visit(ctx.expression(0));
 
@@ -529,7 +532,7 @@ public class BaseVisitor extends ParserBaseVisitor {
     }
 
 
-    public ASTNode visitForStatement(Parser.ForStatementContext ctx) {
+    public ASTNode visitForStatement(AngularParser.ForStatementContext ctx) {
         // Visit the components of the for-statement
         ASTNode initializer = ctx.variableDeclaration() != null
                 ? (ASTNode) visit(ctx.variableDeclaration())
@@ -546,7 +549,7 @@ public class BaseVisitor extends ParserBaseVisitor {
     }
 
 
-    public ASTNode visitWhileStatement(Parser.WhileStatementContext ctx) {
+    public ASTNode visitWhileStatement(AngularParser.WhileStatementContext ctx) {
         // Visit the condition (expression) and the block
         ASTNode condition = (ASTNode) visit(ctx.expression());
         Block block = (Block) visit(ctx.block());
@@ -554,11 +557,11 @@ public class BaseVisitor extends ParserBaseVisitor {
         // Create and return a WhileStatement node
         return new WhileStatement(condition, block);
     }
-    public ASTNode visitObjectLiteral(Parser.ObjectLiteralContext ctx) {
+    public ASTNode visitObjectLiteral(AngularParser.ObjectLiteralContext ctx) {
         ObjectLiteral objectLiteral = new ObjectLiteral();
 
         // Visit each property in the object literal
-        for (Parser.PropertyContext propertyCtx : ctx.property()) {
+        for (AngularParser.PropertyContext propertyCtx : ctx.property()) {
             Property property = (Property) visit(propertyCtx);
             objectLiteral.addProperty(property);
         }
@@ -567,7 +570,7 @@ public class BaseVisitor extends ParserBaseVisitor {
     }
 
 
-    public ASTNode visitLiteral(Parser.LiteralContext ctx) {
+    public ASTNode visitLiteral(AngularParser.LiteralContext ctx) {
         // Handle signed integers
         if (ctx.Integer() != null) {
             String sign = ctx.PLUS() != null ? "+" : ctx.MINUS() != null ? "-" : "";
@@ -608,7 +611,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         return null; // Default case (should not be reached)
     }
 
-    public ASTNode visitStatement(Parser.StatementContext ctx) {
+    public ASTNode visitStatement(AngularParser.StatementContext ctx) {
         if (ctx.variableDeclaration() != null) {
             return new Statement((ASTNode) visit(ctx.variableDeclaration()));
         } else if (ctx.objectDecleration() != null) {
@@ -624,7 +627,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         }
         return null; // In case no match is found
     }
-    public ASTNode visitObjectDecleration(Parser.ObjectDeclerationContext ctx) {
+    public ASTNode visitObjectDecleration(AngularParser.ObjectDeclerationContext ctx) {
         // Visit property or object name (could be a Property or ObjectName)
         ASTNode propertyOrObjectName =(ASTNode) visit(ctx.property() != null ? ctx.property() : ctx.objectName());
 
@@ -636,7 +639,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         return new ObjectDeclaration(propertyOrObjectName, objectInit);
     }
 
-    public ASTNode visitObjectName(Parser.ObjectNameContext ctx) {
+    public ASTNode visitObjectName(AngularParser.ObjectNameContext ctx) {
         String name = ctx.IDENTIFIER().getText(); // Get the IDENTIFIER
         ObjectType type = null;
 
@@ -649,7 +652,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         return new ObjectName(name, type);
     }
 
-    public ASTNode visitObjectInit(Parser.ObjectInitContext ctx) {
+    public ASTNode visitObjectInit(AngularParser.ObjectInitContext ctx) {
         String className = ctx.IDENTIFIER().getText(); // Get the class name (IDENTIFIER)
         ObjectType objectType = null;
 
@@ -663,7 +666,7 @@ public class BaseVisitor extends ParserBaseVisitor {
 
         // Visit and add arguments (expressions) if present
         if (ctx.expression() != null) {
-            for (Parser.ExpressionContext exprCtx : ctx.expression()) {
+            for (AngularParser.ExpressionContext exprCtx : ctx.expression()) {
                 objectInit.addArgument((ASTNode) visit(exprCtx));
             }
         }
@@ -671,7 +674,7 @@ public class BaseVisitor extends ParserBaseVisitor {
         return objectInit;
     }
 
-    public ASTNode visitObjectType(Parser.ObjectTypeContext ctx) {
+    public ASTNode visitObjectType(AngularParser.ObjectTypeContext ctx) {
         ObjectType objectType = new ObjectType();
 
         // Iterate through each IDENTIFIER and optional list
@@ -689,7 +692,7 @@ public class BaseVisitor extends ParserBaseVisitor {
 
         return objectType;
     }
-    public Object visitConstructorDecleration(Parser.ConstructorDeclerationContext ctx) {
+    public Object visitConstructorDecleration(AngularParser.ConstructorDeclerationContext ctx) {
 
         ParameterList parameters = (ParameterList) visit(ctx.parameterList());
         // Visit the block
@@ -704,7 +707,7 @@ public class BaseVisitor extends ParserBaseVisitor {
 
     }
 
-    public ASTNode visitInputDeclaration(Parser.InputDeclarationContext ctx) {
+    public ASTNode visitInputDeclaration(AngularParser.InputDeclarationContext ctx) {
         // Extract the literal if present
         Literal literal = null;
         if (ctx.literal() != null) {
@@ -722,7 +725,7 @@ public class BaseVisitor extends ParserBaseVisitor {
     }
 
 
-    public ASTNode visitOutputDeclaration(Parser.OutputDeclarationContext ctx) {
+    public ASTNode visitOutputDeclaration(AngularParser.OutputDeclarationContext ctx) {
         // Extract the optional literal (expression)
         Literal literal = ctx.literal() != null ? (Literal) visit(ctx.literal()) : null;
 
@@ -734,7 +737,7 @@ public class BaseVisitor extends ParserBaseVisitor {
 
 
 
-    public ASTNode visitVariableDeclaration(Parser.VariableDeclarationContext ctx) {
+    public ASTNode visitVariableDeclaration(AngularParser.VariableDeclarationContext ctx) {
         String modifier = null;
         String type = null;
         String name = ctx.IDENTIFIER(0).getText();
@@ -770,13 +773,13 @@ public class BaseVisitor extends ParserBaseVisitor {
     }
 
 
-    public ASTNode visitType(Parser.TypeContext ctx) {
+    public ASTNode visitType(AngularParser.TypeContext ctx) {
 
         String typeText = ctx.getText();
         return new Type(typeText);
     }
 
-    public ASTNode visitPropertyDeclaration(Parser.PropertyDeclarationContext ctx) {
+    public ASTNode visitPropertyDeclaration(AngularParser.PropertyDeclarationContext ctx) {
         // Parse the modifier if present
         Modifier modifier = ctx.modifier() != null ? (Modifier) visit(ctx.modifier()) : null;
 
@@ -791,7 +794,7 @@ public class BaseVisitor extends ParserBaseVisitor {
     }
 
 
-    public ASTNode visitProperty(Parser.PropertyContext ctx) {
+    public ASTNode visitProperty(AngularParser.PropertyContext ctx) {
         if (ctx.imports() != null) {
             Imports imports = (Imports) visit(ctx.imports());
             return new Property("imports", imports);

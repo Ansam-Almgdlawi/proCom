@@ -1,13 +1,12 @@
 import AST.Program;
-import antlr.Lexer;
-import antlr.Parser;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.TokenSource;
+import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import visitor.BaseVisitor;
 import java.io.File;
 import java.io.IOException;
+import src.antlr.AngularParser;
+import src.antlr.AngularLexer;
+
 
 import static org.antlr.v4.runtime.CharStreams.fromFileName;
 
@@ -16,10 +15,12 @@ public class Main {
     static void printAST(File file)throws IOException {
         String source = file.getPath();
         CharStream cs = fromFileName(source);
-        Lexer lexer = new Lexer(cs);
+        AngularLexer lexer = new AngularLexer(cs);
         CommonTokenStream token = new CommonTokenStream((TokenSource) lexer);
-        Parser parser = new Parser(token);
+        AngularParser parser = new AngularParser(token);
         ParseTree tree = parser.program();
+        System.out.println("Number of syntax errors: " + parser.getNumberOfSyntaxErrors());
+
         Program program = (Program) new BaseVisitor().visit(tree);
         System.out.println("The Parser Output for "+file.getName() +" :");
         System.out.println(program);
@@ -42,6 +43,7 @@ public class Main {
         }
     }
     public static void main(String[] args) throws IOException {
-        getTests("newproject/Test");
+        getTests("C:/Users/pc/Desktop/newproject/newproject/newproject/Test");
+
     }
 }

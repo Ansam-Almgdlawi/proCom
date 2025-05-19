@@ -11,15 +11,20 @@ public class Url implements ASTNode {
         this.isStyleUrl = isStyleUrl;
     }
 
+    public Url(String replace) {
+        this.value = replace;
+        this.isStyleUrl = false;       // أو true حسب الحاجة
+        this.prefix = "";              // أو "TEMPLATEURL"/"STYLEURL" حسب السياق
+    }
+
     public Url(String replace, String value, boolean isStyleUrl, String prefix) {
+
         this.value = value;
         this.isStyleUrl = isStyleUrl;
         this.prefix = prefix;
     }
 
-    public Url(String replace) {
 
-    }
 
     // Getter methods
     public String getValue() {
