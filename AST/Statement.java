@@ -13,7 +13,11 @@ public class Statement implements ASTNode{
 
     @Override
     public String toString() {
-        return statement.toString();
+        if (statement == null) {
+            return "Statement{null}";
+        }
+        return "Statement{" + statement.toString() + "}";
     }
+
 }
 

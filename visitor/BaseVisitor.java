@@ -1,7 +1,7 @@
 package visitor;
 
 import AST.*;
-import AST.Expressions.Expression;
+import AST.Expressions.*;
 //import gen.src.antlr.AngularParserBaseVisitor;
 import src.antlr.AngularParser;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -11,15 +11,14 @@ import src.antlr.AngularParserBaseVisitor;
 //import src.antlr.AngularParserBaseVisitor;
 
 public class BaseVisitor extends AngularParserBaseVisitor {
+    @Override
     public Program visitProgram(AngularParser.ProgramContext ctx) {
-
         Program program = new Program();
-       // if(ctx.getChild(0) instanceof Parser.HtmlDocumentContext ){
-          //  program.addElement(() visit(ctx.getChild(0)));
-           // return program;
-      //  }
-        for (int i = 0; i < ctx.children.size(); i++) {
-            program.addElement((ASTNode) visit(ctx.getChild(i)));
+        for (ParseTree child : ctx.children) {
+            ASTNode node = (ASTNode) visit(child);
+            if (node != null) {
+                program.addElement(node);
+            }
         }
         return program;
     }
@@ -185,24 +184,41 @@ public class BaseVisitor extends AngularParserBaseVisitor {
         return new Parameter(paramName);
     }
     public ASTNode visitMethodDeclaration(AngularParser.MethodDeclarationContext ctx) {
-
+        if (ctx == null) return null;
 
         if (ctx.arrowMethod() != null) {
-            // Handle arrow method
             return (ASTNode) visit(ctx.arrowMethod());
         }
 
-        // Handle traditional method declaration
+        if (ctx.IDENTIFIER() == null || ctx.IDENTIFIER().isEmpty()) {
+            return null; // لا يوجد اسم method
+        }
+
         String name = ctx.IDENTIFIER().get(0).getText();
-        ParameterList parameterList = (ParameterList) visit(ctx.parameterList());
-        String returnType = ctx.COLON() != null && ctx.IDENTIFIER(1) != null
-                ? ctx.IDENTIFIER(1).getText()
-                : null;
-        Block block = (Block) visit(ctx.block());
-        Modifier modifier=(Modifier) visit(ctx.modifier());
+
+        ParameterList parameterList = null;
+        if (ctx.parameterList() != null) {
+            parameterList = (ParameterList) visit(ctx.parameterList());
+        }
+
+        String returnType = null;
+        if (ctx.COLON() != null && ctx.IDENTIFIER().size() > 1 && ctx.IDENTIFIER(1) != null) {
+            returnType = ctx.IDENTIFIER(1).getText();
+        }
+
+        Block block = null;
+        if (ctx.block() != null) {
+            block = (Block) visit(ctx.block());
+        }
+
+        Modifier modifier = null;
+        if (ctx.modifier() != null) {
+            modifier = (Modifier) visit(ctx.modifier());
+        }
 
         return new MethodDeclaration(name, modifier, parameterList, returnType, block);
     }
+
     public ASTNode visitArrowMethod(AngularParser.ArrowMethodContext ctx) {
         // Extract the optional modifier (e.g., PUBLIC, PRIVATE)
         Modifier modifier = ctx.modifier() != null ?(Modifier) visit( ctx.modifier()) : null;
@@ -612,6 +628,9 @@ public class BaseVisitor extends AngularParserBaseVisitor {
     }
 
     public ASTNode visitStatement(AngularParser.StatementContext ctx) {
+        if (ctx.expressionStatement() != null) {
+            return (ASTNode) visit(ctx.expressionStatement()); // لا تغلف ب Statement مرة ثانية
+        }
         if (ctx.variableDeclaration() != null) {
             return new Statement((ASTNode) visit(ctx.variableDeclaration()));
         } else if (ctx.objectDecleration() != null) {
@@ -625,7 +644,7 @@ public class BaseVisitor extends AngularParserBaseVisitor {
         } else if (ctx.expressionStatement() != null) {
             return new Statement((ASTNode)visit(ctx.expressionStatement()));
         }
-        return null; // In case no match is found
+        return new Statement(null);
     }
     public ASTNode visitObjectDecleration(AngularParser.ObjectDeclerationContext ctx) {
         // Visit property or object name (could be a Property or ObjectName)
@@ -805,7 +824,133 @@ public class BaseVisitor extends AngularParserBaseVisitor {
 
         return new Property(name, value);
     }
+    @Override
+    public ASTNode visitScriptBlock(AngularParser.ScriptBlockContext ctx) {
+        Program program = new Program();
 
+        // ctx.tsStatement() يرجع قائمة جمل TypeScript داخل scriptBlock
+        for (AngularParser.TsStatementContext tsStmtCtx : ctx.tsStatement()) {
+            ASTNode node = (ASTNode) visit(tsStmtCtx);  // زور كل جملة TypeScript
+            if (node != null) {
+                program.addElement(node);
+            }
+        }
+
+        return program;
+    }
+
+//expression
+public Object visitExpressionList(AngularParser.ExpressionListContext ctx) {
+    ASTNode expression = (ASTNode) visit(ctx.expression());
+    ListStructure list = (ListStructure) visit(ctx.list());
+    return new ExpressionList(expression, list);
+}
+
+    @Override
+    public ASTNode visitObjectLiteralExpression(AngularParser.ObjectLiteralExpressionContext ctx) {
+        return new ExistingExpression((ASTNode) visit(ctx.objectLiteral())).expression;
+    }
+
+    @Override
+    public ASTNode visitObjectDeclarationExpression(AngularParser.ObjectDeclarationExpressionContext ctx) {
+        return new ExistingExpression((ASTNode) visit(ctx.objectDecleration())).expression;
+    }
+
+    @Override
+    public ASTNode visitObjectNameExpression(AngularParser.ObjectNameExpressionContext ctx) {
+        return new ExistingExpression((ASTNode) visit(ctx.objectName())).expression;
+    }
+
+    @Override
+    public ASTNode visitArrowMethodExpression(AngularParser.ArrowMethodExpressionContext ctx) {
+        return new ExistingExpression((ASTNode) visit(ctx.arrowMethod())).expression;
+    }
+
+    @Override
+    public Object visitAssignmentExpression(AngularParser.AssignmentExpressionContext ctx) {
+        ASTNode left = (ASTNode) visit(ctx.expression());
+        ASTNode right = ctx.literal() != null ? (ASTNode) visit(ctx.literal()) : (ASTNode) visit(ctx.dataStructure());
+        return new AssignmentExpression(left, right);
+    }
+
+    @Override
+    public Object visitThisExpression(AngularParser.ThisExpressionContext ctx) {
+        return new ThisExpression();
+    }
+
+    @Override
+    public Object visitIdentifierExpression(AngularParser.IdentifierExpressionContext ctx) {
+        return new IdentifierExpression(ctx.IDENTIFIER().getText());
+    }
+
+    @Override
+    public Object visitPostIncrementExpression(AngularParser.PostIncrementExpressionContext ctx) {
+        return new PostIncrementExpression(ctx.IDENTIFIER().getText());
+    }
+
+    @Override
+    public Object visitPostDecrementExpression(AngularParser.PostDecrementExpressionContext ctx) {
+        return new PostDecrementExpression(ctx.IDENTIFIER().getText());
+    }
+
+    @Override
+    public ASTNode visitLiteralExpression(AngularParser.LiteralExpressionContext ctx) {
+
+        return new ExistingExpression((ASTNode) visit(ctx.literal())).expression;
+    }
+
+    @Override
+    public ASTNode visitCallingMethodExpression(AngularParser.CallingMethodExpressionContext ctx) {
+
+        return new ExistingExpression((ASTNode) visit(ctx.callingMethod())).expression;
+    }
+
+    @Override
+    public Object visitDotExpression(AngularParser.DotExpressionContext ctx) {
+        ASTNode left = (ASTNode) visit(ctx.expression(0));
+        ASTNode right = (ASTNode) visit(ctx.expression(1));
+        return new DotExpression(left, right);
+    }
+
+    @Override
+    public Object visitComparisonExpression(AngularParser.ComparisonExpressionContext ctx) {
+        ASTNode left = (ASTNode) visit(ctx.expression(0));
+        String operator = ctx.compersion().getText();
+        ASTNode right = (ASTNode) visit(ctx.expression(1));
+        return new ComparisonExpression(left, operator, right);
+    }
+
+    @Override
+    public Object visitOperatorExpression(AngularParser.OperatorExpressionContext ctx) {
+        ASTNode left = (ASTNode) visit(ctx.expression(0));
+        String operator = ctx.operator().getText();
+        ASTNode right = (ASTNode) visit(ctx.expression(1));
+        return new OperatorExpression(left, operator, right);
+    }
+
+    @Override
+    public Object visitGenericTypeExpression(AngularParser.GenericTypeExpressionContext ctx) {
+        ASTNode innerExpression = (ASTNode) visit(ctx.expression());
+        String identifier = ctx.IDENTIFIER().getText();
+        return new GenericTypeExpression(innerExpression, identifier);
+    }
+
+    @Override
+    public Object visitTypeCastExpression(AngularParser.TypeCastExpressionContext ctx) {
+        ASTNode innerExpression = (ASTNode) visit(ctx.expression());
+        String typeIdentifier = ctx.IDENTIFIER().getText();
+        return new TypeCastExpression(innerExpression, typeIdentifier);
+    }
+
+    @Override
+    public ASTNode visitDataStructureExpression(AngularParser.DataStructureExpressionContext ctx) {
+        return new ExistingExpression((ASTNode) visit(ctx.dataStructure())).expression;
+    }
+    @Override
+    public ASTNode visitExpressionStatement(AngularParser.ExpressionStatementContext ctx) {
+        ASTNode expr = (ASTNode) visit(ctx.expression());
+        return new Statement(expr);
+    }
 
 
 }

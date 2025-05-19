@@ -1,3 +1,4 @@
+<script>
 import { Component, Input } from '@angular/core';
 import { Product } from '../product.model';
 
@@ -9,3 +10,6 @@ import { Product } from '../product.model';
 export class ProductDetailComponent {
   @Input() product?: Product;
 }
+</script>
+
+

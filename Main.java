@@ -16,34 +16,56 @@ public class Main {
         String source = file.getPath();
         CharStream cs = fromFileName(source);
         AngularLexer lexer = new AngularLexer(cs);
-        CommonTokenStream token = new CommonTokenStream((TokenSource) lexer);
+        CommonTokenStream token = new CommonTokenStream(lexer);
         AngularParser parser = new AngularParser(token);
-        ParseTree tree = parser.program();
-        System.out.println("Number of syntax errors: " + parser.getNumberOfSyntaxErrors());
+        AngularParser.ProgramContext tree = parser.program();
 
-        Program program = (Program) new BaseVisitor().visit(tree);
-        System.out.println("The Parser Output for "+file.getName() +" :");
-        System.out.println(program);
+        if (parser.getNumberOfSyntaxErrors() > 0 || tree == null) {
+            System.err.println("❌ Failed to parse: " + file.getName() + " (syntax errors or no match with grammar)");
+            return;
+        }
+
+        try {
+            Program program = (Program) new BaseVisitor().visit(tree);
+            System.out.println("✅ The Parser Output for " + file.getName() + " :");
+            System.out.println(program);
+        } catch (NullPointerException e) {
+            System.err.println("💥 Visitor failed due to null node in tree for: " + file.getName());
+            e.printStackTrace();
+        }
     }
-    static void getTests(String path)throws IOException {
-        File folder = new File(path);
-        File[] files = folder.listFiles();
-        for (int i = 0; i < files.length; i++) {
 
+    static void getTests(String path) throws IOException {
+        File folder = new File(path);
+
+        if (!folder.exists() || !folder.isDirectory()) {
+            System.err.println("❌ Directory not found or is not a directory: " + folder.getAbsolutePath());
+            return;
+        }
+
+        File[] files = folder.listFiles();
+
+        if (files == null || files.length == 0) {
+            System.err.println("📂 Directory is empty or inaccessible: " + folder.getAbsolutePath());
+            return;
+        }
+
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].getName().endsWith(".spec.ts")) continue;
             if (files[i].isFile()) {
                 if (files[i].getName().contains("ts"))
                     printAST(files[i]);
-                else if(files[i].getName().contains("html"))continue;
-                    //     printAST(files[i]);
+                else if (files[i].getName().contains("html")) continue;
                 else continue;
-            }
-            else {
+            } else {
                 getTests(files[i].getPath());
             }
         }
     }
-    public static void main(String[] args) throws IOException {
-        getTests("C:/Users/pc/Desktop/newproject/newproject/newproject/Test");
 
+    public static void main(String[] args) throws IOException {
+        getTests("C:/Users/pc/Desktop/newproject/newproject/newproject/Tset");
+
+       // Main m=new Main();
     }
 }
