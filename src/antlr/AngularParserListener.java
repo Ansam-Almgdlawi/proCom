@@ -934,6 +934,16 @@ public interface AngularParserListener extends ParseTreeListener {
 	 */
 	void exitHtmlContent(AngularParser.HtmlContentContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link AngularParser#stylesheet}.
+	 * @param ctx the parse tree
+	 */
+	void enterStylesheet(AngularParser.StylesheetContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link AngularParser#stylesheet}.
+	 * @param ctx the parse tree
+	 */
+	void exitStylesheet(AngularParser.StylesheetContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link AngularParser#styleBlock}.
 	 * @param ctx the parse tree
 	 */

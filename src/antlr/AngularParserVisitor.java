@@ -562,6 +562,12 @@ public interface AngularParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitHtmlContent(AngularParser.HtmlContentContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link AngularParser#stylesheet}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStylesheet(AngularParser.StylesheetContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link AngularParser#styleBlock}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

@@ -313,6 +313,8 @@ htmlContent
     ;
 
 // ---------- CSS Parsing ----------
+stylesheet : styleBlock? EOF ;
+
 styleBlock
     : STYLE_OPEN cssRules STYLE_CLOSE
     ;

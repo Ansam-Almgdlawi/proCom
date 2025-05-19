@@ -1,3 +1,4 @@
+import AST.ASTNode;
 import AST.Program;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -34,6 +35,29 @@ public class Main {
             e.printStackTrace();
         }
     }
+    static void printCSSAST(File file) throws IOException {
+        String source = file.getPath();
+        CharStream cs = fromFileName(source);
+        AngularLexer lexer = new AngularLexer(cs);
+        CommonTokenStream token = new CommonTokenStream(lexer);
+        AngularParser parser = new AngularParser(token);
+        AngularParser.StylesheetContext tree = parser.stylesheet(); // لاحظ هنا الفرق
+
+        if (parser.getNumberOfSyntaxErrors() > 0 || tree == null) {
+            System.err.println("❌ Failed to parse CSS: " + file.getName() + " (syntax errors or no match with grammar)");
+            return;
+        }
+
+        try {
+            ASTNode cssAST = (ASTNode) new BaseVisitor().visit(tree);
+            System.out.println("✅ The CSS Parser Output for " + file.getName() + " :");
+            System.out.println(cssAST);
+        } catch (NullPointerException e) {
+            System.err.println("💥 Visitor failed due to null node in CSS for: " + file.getName());
+            e.printStackTrace();
+        }
+    }
+
 
     static void getTests(String path) throws IOException {
         File folder = new File(path);
@@ -56,6 +80,8 @@ public class Main {
                 if (files[i].getName().contains("ts"))
                     printAST(files[i]);
                 else if (files[i].getName().contains("html")) continue;
+                else if (files[i].getName().endsWith("css"))
+                    printCSSAST(files[i]);
                 else continue;
             } else {
                 getTests(files[i].getPath());

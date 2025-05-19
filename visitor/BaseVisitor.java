@@ -1,12 +1,16 @@
 package visitor;
 
 import AST.*;
+import AST.CSS.*;
 import AST.Expressions.*;
 //import gen.src.antlr.AngularParserBaseVisitor;
 import src.antlr.AngularParser;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import src.antlr.AngularParserBaseVisitor;
+
+import java.util.ArrayList;
+import java.util.List;
 //import src.src.antlr.AngularParserBaseVisitor;
 //import src.antlr.AngularParserBaseVisitor;
 
@@ -950,6 +954,69 @@ public Object visitExpressionList(AngularParser.ExpressionListContext ctx) {
     public ASTNode visitExpressionStatement(AngularParser.ExpressionStatementContext ctx) {
         ASTNode expr = (ASTNode) visit(ctx.expression());
         return new Statement(expr);
+    }
+//css visitor
+@Override
+public ASTNode visitStyleBlock(AngularParser.StyleBlockContext ctx) {
+    List<CSSRule> rules = new ArrayList<>();
+    for (AngularParser.CssRuleContext ruleCtx : ctx.cssRules().cssRule()) {
+        rules.add((CSSRule) visit(ruleCtx));
+    }
+    return new StyleBlock(rules);
+}
+
+    @Override
+    public ASTNode visitCssRule(AngularParser.CssRuleContext ctx) {
+        CSSSelector selector = (CSSSelector) visit(ctx.cssSelector());
+        CSSDeclarations declarations = (CSSDeclarations) visit(ctx.cssDeclarations());
+        return new CSSRule(selector, declarations.getDeclarations());
+    }
+
+    @Override
+    public ASTNode visitCssSelector(AngularParser.CssSelectorContext ctx) {
+        List<SimpleSelector> selectors = new ArrayList<>();
+        for (AngularParser.SimpleSelectorContext s : ctx.simpleSelector()) {
+            selectors.add((SimpleSelector) visit(s));
+        }
+        return new CSSSelector(selectors);
+    }
+
+    @Override
+    public ASTNode visitSimpleSelector(AngularParser.SimpleSelectorContext ctx) {
+        if (ctx.CSS_CLASS_SELECTOR() != null) {
+            String className = ctx.CSS_CLASS_SELECTOR().getText();
+            return new SimpleSelector(SimpleSelector.SelectorType.CLASS, className);
+        } else if (ctx.CSS_ID_SELECTOR() != null) {
+            String idName = ctx.CSS_ID_SELECTOR().getText();
+            return new SimpleSelector(SimpleSelector.SelectorType.ID, idName);
+        } else if (ctx.CSS_ELEMENT_SELECTOR() != null) {
+            String tagName = ctx.CSS_ELEMENT_SELECTOR().getText();
+            return new SimpleSelector(SimpleSelector.SelectorType.ELEMENT, tagName);
+        }
+        return null;
+    }
+
+    @Override
+    public ASTNode visitCssDeclarations(AngularParser.CssDeclarationsContext ctx) {
+        List<CSSDeclaration> declarations = new ArrayList<>();
+        for (AngularParser.CssDeclarationContext declCtx : ctx.cssDeclaration()) {
+            declarations.add((CSSDeclaration) visit(declCtx));
+        }
+        return new CSSDeclarations(declarations);
+    }
+
+    @Override
+    public ASTNode visitCssDeclaration(AngularParser.CssDeclarationContext ctx) {
+        String property = ctx.CSS_PROPERTY(0).getText();
+        List<String> values = new ArrayList<>();
+        for (var value : ctx.CSS_VALUE()) {
+            values.add(value.getText());
+        }
+        return new CSSDeclaration(property, values);
+    }
+    @Override
+    public ASTNode visitStylesheet(AngularParser.StylesheetContext ctx) {
+        return (ASTNode) visit(ctx.styleBlock()); // لأنه يحتوي القواعد
     }
 
 

@@ -1,7 +1,6 @@
 package AST.CSS;
 
 import AST.ASTNode;
-
 import java.util.List;
 
 public class CSSDeclaration implements ASTNode {
@@ -23,6 +22,6 @@ public class CSSDeclaration implements ASTNode {
 
     @Override
     public String toString() {
-        return "CSSDeclaration{" + property + ": " + values + "}";
+        return property + ": " + values;
     }
 }
