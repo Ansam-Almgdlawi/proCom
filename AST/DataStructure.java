@@ -1,20 +1,36 @@
 package AST;
 
-public class DataStructure implements ASTNode {
-    private ASTNode structure; // Can be ListStructure or MapStructure
+import java.util.List;
 
-    public DataStructure(ASTNode structure) {
-        this.structure = structure;
+public class DataStructure implements ASTNode {
+
+    private ListStructure structure1;
+    private MapStructure structure2;
+    public DataStructure() {
+    }
+    public ListStructure getStructure1() {
+        return structure1;
     }
 
-    public ASTNode getStructure() {
-        return structure;
+    public void setStructure1(ListStructure structure1) {
+        this.structure1 = structure1;
+    }
+
+
+
+    public MapStructure getStructure2() {
+        return structure2;
+    }
+
+    public void setStructure2(MapStructure structure2) {
+        this.structure2 = structure2;
     }
 
     @Override
     public String toString() {
         return "\nDataStructure{" +
-                structure +
+                structure1 + "\n"+
+                structure2+
                 "\n}";
     }
 }

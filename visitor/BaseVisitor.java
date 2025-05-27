@@ -372,13 +372,16 @@ public class BaseVisitor extends AngularParserBaseVisitor {
 
 
     public ASTNode visitDataStructure(AngularParser.DataStructureContext ctx) {
+        DataStructure dataStructure=new DataStructure();
         if (ctx.list() != null) {
-            return new DataStructure((ASTNode) visit(ctx.list()));
+            dataStructure.setStructure1((ListStructure) visitList(ctx.list())); ;
+           return dataStructure;
         }
         if (ctx.map() != null) {
-            return new DataStructure((ASTNode) visit(ctx.map()));
+            dataStructure.setStructure2((MapStructure) visitMap(ctx.map())) ;
+            return dataStructure;
         }
-        return null; // Shouldn't occur if the grammar is correctly enforced
+        return null;
     }
 
     public ASTNode visitItemsStructures(AngularParser.ItemsStructuresContext ctx) {
@@ -948,7 +951,7 @@ public Object visitExpressionList(AngularParser.ExpressionListContext ctx) {
 
     @Override
     public ASTNode visitDataStructureExpression(AngularParser.DataStructureExpressionContext ctx) {
-        return new ExistingExpression((ASTNode) visit(ctx.dataStructure())).expression;
+        return (ASTNode) visitDataStructure(ctx.dataStructure());
     }
     @Override
     public ASTNode visitExpressionStatement(AngularParser.ExpressionStatementContext ctx) {
